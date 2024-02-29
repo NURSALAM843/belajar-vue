@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Belajar Vue - V-Model</title>
+  </head>
+
+  <body>
+    <div id="app">
+       <div>
+        <div>
+            <input type="text" v-model="username" placeholder="Username">
+
+        </div>
+        <br>
+        <div>
+            <textarea type="text" v-model="address" placeholder="Address"></textarea>
+        </div>
+        <div>
+            <input type="radio" name="Pria" id="" v-model="gender">Pria
+            <input type="radio" name="Wanita" id="" v-model="gender">Wanita
+
+        </div>
+       </div>
+       <div>
+        <p>username : {{ username }}</p>
+        <p>address : {{ address }}</p>
+        <p>gender : {{ gender }}</p>
+       </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+      createApp({
+        data() {
+          return {
+          username:'',
+          address:'',
+          gender:'',
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

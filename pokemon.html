@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Belajar Vue - Pokemon Api</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+  </head>
+
+  <style>
+    .card {
+      background: rgba(255, 255, 255, 0.21);
+      border-radius: 10px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(9px);
+      border-left: 2px solid rgba(255, 255, 255, 0.58);
+      border-top: 2px solid rgba(255, 255, 255, 0.58);
+    }
+    .suggestedPokemon{
+        cursor: pointer;
+    }
+  </style>
+
+  <body>
+    <div id="app">
+      <div class="container-fluid bg-dark bg-gradient">
+        <div class="container bg-dark" style="min-height: 100vh">
+          <div class="row justify-content-center">
+            <div class="col-6">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pok%C3%A9mon_logo.svg/1024px-International_Pok%C3%A9mon_logo.svg.png"
+                alt=""
+                width="100%"
+              />
+            </div>
+          </div>
+
+          <div class="row justify-content-center mt-5 text-white">
+            <div class="col-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Search Pokemon"
+                v-model="search"
+              />
+              <div class="mt-2">
+                <label for="">Sugestion: </label>
+                <span v-for="item in suggestedPokemon" class="suggestedPokemon" @click="viewDetailPokemon(item.name)">{{ item.name }} | </span>
+            </div>
+            </div>
+          </div>
+
+          <div class="main mt-5 pt-5">
+            <div class="view-all text-white" v-if="!viewedAsDetail">
+              <div class="row px-5">
+                <div
+                  class="col-12 col-md-4 col-lg-3 mb-3"
+                  v-for="item in pokemonList"
+                  @click="viewDetailPokemon(item.name)"
+                >
+                  <div class="card text-center text-white">
+                    <img :src="item.sprites.front_default" alt="" />
+                    <span class="fs-4">{{ item.name }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="view-detail text-white" v-else>
+              <div>
+                <button
+                  class="btn btn-outline-success"
+                  @click="viewedAsDetail=false"
+                >
+                  View All Pokemon
+                </button>
+              </div>
+              <div class="row mt-5">
+                <div class="col-12 col-md-6">
+                  <div class="card">
+                    <img
+                      :src="selectedPokemon.sprites ? selectedPokemon.sprites.front_default : '' "
+                      alt=""
+                    />
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <h2>{{ selectedPokemon.name }}</h2>
+                  <p>
+                    <label for="">Type : </label>
+                    <span v-for="i in selectedPokemon.types" class="text-white">
+                      {{ i.type.name }} |
+                    </span>
+                  </p>
+                  <p>
+                    <label for="">Skills : </label><br />
+                    <span v-for="i in selectedPokemon.moves">
+                      {{ i.move.name }} |
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+      createApp({
+        data() {
+          return {
+            pokemonList: [],
+            viewedAsDetail: false,
+            selectedPokemon: "",
+            search: "",
+            gen1Pokemon: [],
+            suggestedPokemon:''
+          };
+        },
+        methods: {
+          async getListPokemon() {
+            let response = await fetch("https://pokeapi.co/api/v2/pokemon");
+            let data = await response.json();
+            let results = data.results;
+            results.forEach((item) => {
+              this.getEachPokemon(item);
+            });
+          },
+          async getEachPokemon(item) {
+            let response = await fetch(
+              "https://pokeapi.co/api/v2/pokemon/" + item.name
+            );
+            let data = await response.json();
+            this.pokemonList.push(data);
+            this.pokemonList.sort((a, b) => a.id - b.id);
+          },
+          async viewDetailPokemon(pokemonName) {
+            this.viewedAsDetail = true;
+            let response = await fetch(
+              "https://pokeapi.co/api/v2/pokemon/" + pokemonName
+            );
+            let data = await response.json();
+            this.selectedPokemon = data;
+          },
+          async getGen1Pokemon() {
+            let response = await fetch(
+              "https://pokeapi.co/api/v2/pokemon?limit=151"
+            );
+            let data = await response.json();
+            let results = data.results;
+            this.gen1Pokemon = results;
+          },
+        },
+        watch: {
+          search() {
+            let filteredPokemon = this.gen1Pokemon.filter(item => {
+                return item.name.includes(this.search)
+            })
+            this.suggestedPokemon = filteredPokemon.slice(0,3)
+          },
+        },
+        mounted() {
+          this.getListPokemon();
+          this.getGen1Pokemon();
+        },
+      }).mount("#app");
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
